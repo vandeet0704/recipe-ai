@@ -29,10 +29,24 @@ export default function Recipe() {
   const fileRef = form.register("file");
 
   const [response, setResponse] = useState<string | null>(null);
-  const [dishName, setDishName] = useState<string>("Paneer Butter Masala"); // Replace "Pasta" with your dish name
+  const [dishName, setDishName] = useState<string>("Burger"); // Replace "Pasta" with your dish name
   const [recipe, setRecipe] = useState<any>(null);
   const [ingredients, setIngredients] = useState<any | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageSrc(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    field.onChange(file ?? undefined);
+  };
 
   const fetchRecipe = async () => {
     const res = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${dishName}&maxFat=25&number=2&apiKey=e7aa0f5b64d540b5bbaa34cfa522129f`);
@@ -70,34 +84,37 @@ export default function Recipe() {
 
   return (
     <div>
-      <div className="px-24 py-4 border-2 border-dashed border-black-700">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full p-10">
-            <FormField
-              control={form.control}
-              name="file"
-              render={({ field }) => {
-                return (
-                  <FormItem>
-                    <FormLabel>Input File</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="file" 
-                        placeholder="shadcn" 
-                        {...fileRef} 
-                        onChange={(event) => {
-                          field.onChange(event.target?.files?.[0] ?? undefined);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
-            <Button type="submit" className="my-4">Submit</Button>
-          </form>
-        </Form>
+      <div className="flex">
+        <div className="px-24 py-4 border-2 border-dashed border-black-700">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full p-10">
+              <FormField
+                control={form.control}
+                name="file"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Input File</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="file" 
+                          placeholder="shadcn" 
+                          {...fileRef} 
+                          onChange={(event) => handleFileChange(event, field)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <Button type="submit" className="my-4">Submit</Button>
+            </form>
+          </Form>
+        </div>
+        <div className="ml-12">
+          {imageSrc && <Image src={imageSrc} width={300} height={300} />}
+        </div>
       </div>
       <div className="mt-12">
         {isSubmitted && recipe && (
